@@ -1,6 +1,7 @@
 %function fullTrain(number)
 clear; clc,
 number = 100;
+mutationStepSize = 0.1;
 
 %Creating NNs
 cropHalfSize = 3;
@@ -55,7 +56,16 @@ previousMax = 0;
 cycle = 0;
 
 
-values = zeros(number,2);
+values = zeros(number,4);
+%1: score
+%2: number
+%3: fitness
+%4: variation
+
+chP = zeros(size(P));
+chTheta1 = zeros(size(Theta1));
+chTheta2 = zeros(size(Theta2));
+
 
 while (notIncreased < 20)
     
@@ -65,47 +75,99 @@ while (notIncreased < 20)
     for i=1:number
         values(i, 1) = fastEvaluate(map, nnParamsAll(i, :), patternNumber, hiddenLayerSize_2, commandSize);
         values(i, 2) = i;
+        values(i, 3) = values(i, 1);
     end
     
     [maxPicked, maxPicker] = max(values(:, 1));
     
     sorted=sortrows(values);
     
-    newNPCs = 0;
-    fifthPart = fix(number/5);
+    newnnParamsAll = zeros(size(nnParamsAll));
+    newnnParamsAll(1, :) = nnParamsAll(sorted(number,2), :);
+    %the best one goes direcly to the next generation
     
     for i=1:number
+        values(i, 4) = sum((nnParamsAll(i, :)-newnnParamsAll(1, :)).^2);
+    end
+    
+    [maxDistance, mostDifferent] = max(values(:, 4));
+    
+    for i=1:number
+        values(i, 1) = (1 - values(i, 3)/maxPicked)^2 + (1 - values(i, 4)/maxDistance)^2;
+    end
+    
+    values(maxPicker ,1) = 0;
+    
+    %the smaller the score, the better
+    sorted=sortrows(values);
+    
+    for i=2:number
         
-        if values(i)<=sorted(fix(number * 0.8))
-            
-            newNPCs = newNPCs + 1;
-            
-            switch fix(newNPCs/fifthPart)
-                case 0
-                    mutationProbability = 0.04;
-                case 1
-                    mutationProbability = 0.08;
-                case 2
-                    mutationProbability = 0.16;
-                otherwise
-                    mutationProbability = 0.32;
-            end
-            
-            nnParamsAll(i, :) = nnParamsAll(sorted(number-mod(i, fifthPart), 2), :);
-            offset = 0;
-            
-            for j=1:3
-                for k = 1:paramSizes(j)
-                    mutatedParam = 2 * epsilon(j) -  epsilon(j);
-                    if rand()<mutationProbability
-                        nnParamsAll(i, k + offset) = nnParamsAll(i, k + offset) + ...
-                            rand() * mutatedParam * mutationProbability * sign(rand()-0.5);
-                    end
-                end
-                offset = offset + paramSizes(j);
+        p1 = 1;
+        while( p1 < number && rand() > 10/number)
+            p1 = p1 + 1;
+        end
+        
+        p2 = 1;
+        while( p2 < number && rand() > 10/number)
+            p2 = p2 + 1;
+        end
+        
+        p1Params = nnParamsAll(sorted(p1, 2), :);
+        p2Params = nnParamsAll(sorted(p2, 2), :);
+        
+        k = features;
+        l = patternNumber;
+        p1P      = reshape(p1Params(1:(k * l)), k, l);
+        p1Theta1 = reshape(p1Params((k * l + 1):(k * l + (hiddenLayerSize_1 + 1) * hiddenLayerSize_2)), hiddenLayerSize_1 + 1, hiddenLayerSize_2);
+        p1Theta2 = reshape(p1Params((k * l + (hiddenLayerSize_1 + 1)* hiddenLayerSize_2 + 1):end), (hiddenLayerSize_2 + 1), commandSize);
+        
+        p2P      = reshape(p2Params(1:(k * l)), k, l);
+        p2Theta1 = reshape(p2Params((k * l + 1):(k * l + (hiddenLayerSize_1 + 1) * hiddenLayerSize_2)), hiddenLayerSize_1 + 1, hiddenLayerSize_2);
+        p2Theta2 = reshape(p2Params((k * l + (hiddenLayerSize_1 + 1)* hiddenLayerSize_2 + 1):end), (hiddenLayerSize_2 + 1), commandSize);
+        
+        for j=1:size(P,2)
+            if rand()>0.5
+                chP(:, j) = p1P(:, j);
+            else
+                chP(:, j) = p2P(:, j);
             end
         end
+        
+        for j=1:size(Theta1,2)
+            if rand()>0.5
+                chTheta1(:, j) = p1Theta1(:, j);
+            else
+                chTheta1(:, j) = p2Theta1(:, j);
+            end
+        end
+        
+        for j=1:size(Theta2,2)
+            if rand()>0.5
+                chTheta2(:, j) = p1Theta2(:, j);
+            else
+                chTheta2(:, j) = p2Theta2(:, j);
+            end
+        end
+        
+        newnnParamsAll(i, :) = [chP(:); chTheta1(:); chTheta2(:)];
+        
+        %mutation
+        offset = 0;
+        
+        for j=1:3
+            for k = 1:paramSizes(j)
+                mutatedParam = 2 * epsilon(j) -  epsilon(j);
+                if rand() < 0.01
+                    nnParamsAll(i, k + offset) = nnParamsAll(i, k + offset) + ...
+                        2 * (rand() - 0.5) * mutatedParam * mutationStepSize;
+                end
+            end
+            offset = offset + paramSizes(j);
+        end
     end
+    
+    nnParamsAll = newnnParamsAll;
     
     currentMax = maxPicked;
     

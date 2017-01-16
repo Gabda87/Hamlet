@@ -6,7 +6,7 @@ function [step] = nextStep(nnParams, mapCrop, ...
     k = size(mapCrop,3); %k = features
     %k is the number of items we want the NN to learn to handle
     l = patternNumber;
-    hiddenLayerSize_1 = n * n * l + 1;
+    hiddenLayerSize_1 = n * n * l;
 
     X = reshape(mapCrop, [], k);
 
@@ -14,8 +14,8 @@ function [step] = nextStep(nnParams, mapCrop, ...
     % P k * l
 
     P      = reshape(nnParams(1:(k * l)), k, l);
-    Theta1 = reshape(nnParams((k * l + 1):(k * l + hiddenLayerSize_1 * hiddenLayerSize_2)), hiddenLayerSize_1, hiddenLayerSize_2);
-    Theta2 = reshape(nnParams((k * l + hiddenLayerSize_1 * hiddenLayerSize_2 + 1):end), (hiddenLayerSize_2 + 1), commandSize);
+    Theta1 = reshape(nnParams((k * l + 1):(k * l + (hiddenLayerSize_1 + 1) * hiddenLayerSize_2)), hiddenLayerSize_1 + 1, hiddenLayerSize_2);
+    Theta2 = reshape(nnParams((k * l + (hiddenLayerSize_1 + 1)* hiddenLayerSize_2 + 1):end), (hiddenLayerSize_2 + 1), commandSize);
 
 
     A1 = X * P;
