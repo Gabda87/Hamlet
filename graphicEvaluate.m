@@ -1,6 +1,6 @@
-function picked = evaluateNN(npcName)
+function picked = graphicEvaluate(npcName)
 
-load('map1.mat','map');
+load('map0.mat','map');
 halfMapSize = (size(map, 1) - 1) / 2;
 
 myVars = {'nnParams', 'patternNumber', 'hiddenLayerSize_2','commandSize', 'cropSize'};
@@ -29,14 +29,14 @@ marker = rotateMarker(marker, rotation);
 
 subplot(1,2,2);
     spy(sparse(map(:,:,2)),'gs',4);
-    hold;
+    hold on;
 
 for i = 1:500
     
     subplot(1,2,1);
     hold off;
     spy(sparse(map(:,:,1)),'rs',4);
-    hold;
+    hold on;
     plot(pos(2),pos(1),marker,'MarkerSize',5,'MarkerFaceColor','b');
     subplot(1,2,2);
     handle = plot(pos(2),pos(1),marker,'MarkerSize',5,'MarkerFaceColor','b');

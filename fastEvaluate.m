@@ -14,11 +14,12 @@ mapCrop = cropMap(map, pos(1), pos(2), rotation);
 
 picked = 0;
 %the number of apples
-invalidStep = 0;
-validStep = 0;
+%invalidStep = 0;
+%validStep = 0;
 
 forwardStep = zeros(commandSize, 1);
 forwardStep(1) = 1;
+continuousRotation = 0;
 
 for i = 1:500
     
@@ -38,6 +39,11 @@ for i = 1:500
     if isRotate(step)
         
         rotation = rotateRotation(rotation, step);
+        continuousRotation = continuousRotation + 1;
+        
+        if continuousRotation > 3    
+            break;
+        end
         
     end
     
@@ -45,9 +51,10 @@ for i = 1:500
         
         if isValidStep(step, mapCrop) == 1
             pos = pos + moveDirection(step, rotation);
-            validStep = validStep + 1;
+            %validStep = validStep + 1;
         else
-            invalidStep = invalidStep + 1;
+            %invalidStep = invalidStep + 1;
+            break;
         end
         
     end
