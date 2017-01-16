@@ -1,10 +1,12 @@
 function picked = graphicEvaluate(npcName)
 
-load('map0.mat','map');
+load('map1.mat','map');
 halfMapSize = (size(map, 1) - 1) / 2;
 
-myVars = {'nnParams', 'patternNumber', 'hiddenLayerSize_2','commandSize', 'cropSize'};
+myVars = {'chParams', 'patternNumber', 'hiddenLayerSize_2','commandSize', 'cropSize'};
 load(strcat('NPCs\',npcName,'.mat'), myVars{:});
+
+nnParams = chParams;
 
 pos=[halfMapSize + 1; halfMapSize + 1];
 %it is the middle of the map

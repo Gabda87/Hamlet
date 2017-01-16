@@ -49,6 +49,8 @@ for i = 1:500
     
     if isMove(step)
         
+        continuousRotation = 0;
+        
         if isValidStep(step, mapCrop) == 1
             pos = pos + moveDirection(step, rotation);
             %validStep = validStep + 1;
