@@ -1,10 +1,6 @@
-function picked = evaluateNN(npcName, mapName)
+function picked = evaluateNN(npcName)
 
-if nargin < 2
-  mapName = 'map1.mat';
-end
-
-load(mapName,'map');
+load('map1.mat','map');
 halfMapSize = (size(map, 1) - 1) / 2;
 
 myVars = {'nnParams', 'patternNumber', 'hiddenLayerSize_2','commandSize', 'cropSize'};
@@ -28,7 +24,28 @@ forwardStep = zeros(commandSize, 1);
 forwardStep(1) = 1;
 continuousRotation = 0;
 
+marker = 'b^';
+marker = rotateMarker(marker, rotation);
+
+subplot(1,2,2);
+    spy(sparse(map(:,:,2)),'gs',4);
+    hold;
+
 for i = 1:500
+    
+    subplot(1,2,1);
+    hold off;
+    spy(sparse(map(:,:,1)),'rs',4);
+    hold;
+    plot(pos(2),pos(1),marker,'MarkerSize',5,'MarkerFaceColor','b');
+    subplot(1,2,2);
+    handle = plot(pos(2),pos(1),marker,'MarkerSize',5,'MarkerFaceColor','b');
+    
+    
+    
+    drawnow;
+    
+    delete(handle)
     
     nextTile = pos + moveDirection(forwardStep, rotation);
     
@@ -46,6 +63,7 @@ for i = 1:500
     if isRotate(step)
         
         rotation = rotateRotation(rotation, step);
+        marker = rotateMarker(marker, rotation);
         continuousRotation = continuousRotation + 1;
         
         if continuousRotation > 3    
@@ -74,7 +92,7 @@ for i = 1:500
     
 end
 
-%fprintf('%s: Invalid steps: %i; Valid steps: %i; Apples picked: %i\n'...
-%    ,npcName, invalidStep, validStep, picked);
+fprintf('%s: Invalid steps: %i; Valid steps: %i; Apples picked: %i\n'...
+    ,npcName, invalidStep, validStep, picked);
 
 end

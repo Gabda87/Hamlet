@@ -1,14 +1,7 @@
-function picked = evaluateNN(npcName, mapName)
+function picked = fastEvaluate(map, nnParams, patternNumber,...
+    hiddenLayerSize_2, commandSize)
 
-if nargin < 2
-  mapName = 'map1.mat';
-end
-
-load(mapName,'map');
 halfMapSize = (size(map, 1) - 1) / 2;
-
-myVars = {'nnParams', 'patternNumber', 'hiddenLayerSize_2','commandSize', 'cropSize'};
-load(strcat('NPCs\',npcName,'.mat'), myVars{:});
 
 pos=[halfMapSize + 1; halfMapSize + 1];
 %it is the middle of the map
@@ -26,7 +19,6 @@ validStep = 0;
 
 forwardStep = zeros(commandSize, 1);
 forwardStep(1) = 1;
-continuousRotation = 0;
 
 for i = 1:500
     
@@ -46,26 +38,16 @@ for i = 1:500
     if isRotate(step)
         
         rotation = rotateRotation(rotation, step);
-        continuousRotation = continuousRotation + 1;
-        
-        if continuousRotation > 3    
-            break;
-        end
         
     end
     
-    
-    
     if isMove(step)
-        
-        continuousRotation = 0;
         
         if isValidStep(step, mapCrop) == 1
             pos = pos + moveDirection(step, rotation);
             validStep = validStep + 1;
         else
             invalidStep = invalidStep + 1;
-            break;
         end
         
     end
@@ -73,8 +55,5 @@ for i = 1:500
     mapCrop = cropMap(map, pos(1), pos(2), rotation);
     
 end
-
-%fprintf('%s: Invalid steps: %i; Valid steps: %i; Apples picked: %i\n'...
-%    ,npcName, invalidStep, validStep, picked);
 
 end
