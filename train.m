@@ -5,7 +5,7 @@ bunchNumber = '2';
 myVars = {'nnParamsAll', 'patternNumber', 'hiddenLayerSize_2','commandSize', 'cropSize'};
 load(strcat('NPCs\','bunch',bunchNumber,'.mat'), myVars{:});
 load('map1.mat','map');
-number = 100;
+number = 1000;
 mutationStepSize = 0.01;
 successfulMutation = zeros(100, 100);
 born = 0;
@@ -46,7 +46,7 @@ chTheta1 = zeros(size(Theta1));
 chTheta2 = zeros(size(Theta2));
 
 for i=1:number
-    values(i, 1) = fastEvaluate(map, nnParamsAll(i, :), patternNumber, hiddenLayerSize_2, commandSize);
+    values(i, 1) = fastEvaluate(map, nnParamsAll(i, :), patternNumber, hiddenLayerSize_2, commandSize, cropSize);
 end
 
 [maxPicked, maxPicker] = max(values(:, 1));
@@ -56,7 +56,7 @@ averagePicked = mean(values(:, 1));
 fprintf('New record: NPC%i has picked %i apples (average: %i).\n', maxPicker, maxPicked, fix(averagePicked));
 
 
-while (notIncreased < 10 * number)
+while (notIncreased < 1 * number)
     
     cycle = cycle + 1;
     notIncreased = notIncreased + 1;
@@ -119,7 +119,7 @@ while (notIncreased < 10 * number)
         offset = offset + paramSizes(j);
     end
     
-    score = fastEvaluate(map, chParams, patternNumber, hiddenLayerSize_2, commandSize);
+    score = fastEvaluate(map, chParams, patternNumber, hiddenLayerSize_2, commandSize, cropSize);
     
     if score > averagePicked
         
@@ -173,7 +173,7 @@ while (notIncreased < 10 * number)
         offset = offset + paramSizes(j);
     end
     
-    score = fastEvaluate(map, chParams, patternNumber, hiddenLayerSize_2, commandSize);
+    score = fastEvaluate(map, chParams, patternNumber, hiddenLayerSize_2, commandSize, cropSize);
     
     
     if score > values(p0, 1)

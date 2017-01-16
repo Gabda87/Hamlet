@@ -1,5 +1,5 @@
-function picked = fastEvaluate(map, nnParams, patternNumber,...
-    hiddenLayerSize_2, commandSize)
+function [score, picked] = fastEvaluate(map, nnParams, patternNumber,...
+    hiddenLayerSize_2, commandSize, cropSize)
 
 halfMapSize = (size(map, 1) - 1) / 2;
 
@@ -8,20 +8,34 @@ pos=[halfMapSize + 1; halfMapSize + 1];
 rotation = 0;
 %looking UP
 
-mapCrop = cropMap(map, pos(1), pos(2), rotation);
+mapCrop = cropMap(map, pos(1), pos(2), rotation, cropSize);
 %we rotate the map istead of the NPC
 %the NPC is always looking UP in mapCrop
 
 picked = 0;
 %the number of apples
+score = 0;
 %invalidStep = 0;
 %validStep = 0;
 
 forwardStep = zeros(commandSize, 1);
 forwardStep(1) = 1;
 continuousRotation = 0;
+previuousStep = [0, 0, 0, 0, 0, 0, 0, 1]; %a pick, because there is no inverse for pick
 
-for i = 1:500
+for i = 1:500 
+    
+    if map(pos(1), pos(2), 1) == 1
+        score = score - 0.5;
+    end
+    
+    step = nextStep(nnParams, mapCrop, patternNumber, hiddenLayerSize_2, commandSize);
+    %decides the next step (nothing random so far)
+    
+    if isInverseStep(step, previuousStep)
+        score = score - 5;
+        break;
+    end
     
     nextTile = pos + moveDirection(forwardStep, rotation);
     
@@ -30,11 +44,18 @@ for i = 1:500
         %we pick the apple if it is in front of us
         map(nextTile(1), nextTile(2), 1) = 0;
         picked = picked + 1;
+        continuousRotation = -1;
         
+        if isPick(step) == 1
+            score = score + 6;
+        else
+            score = score + 1;
+        end
+    else
+        if isPick(step) == 1
+            break;
+        end
     end
-    
-    step = nextStep(nnParams, mapCrop, patternNumber, hiddenLayerSize_2, commandSize);
-    %decides the next step (nothing random so far)
     
     if isRotate(step)
         
@@ -61,7 +82,9 @@ for i = 1:500
         
     end
     
-    mapCrop = cropMap(map, pos(1), pos(2), rotation);
+    mapCrop = cropMap(map, pos(1), pos(2), rotation, cropSize);
+    
+    previuousStep = step;
     
 end
 

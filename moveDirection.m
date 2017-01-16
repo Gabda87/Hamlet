@@ -6,7 +6,7 @@ function [direction] = moveDirection(step, rotation)
 %4: left
 
 
-    [M, I] = max(step);
+    [~, I] = max(step);
     
     I = mod((I - 1 + rotation), 4) + 1;
     

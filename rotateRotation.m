@@ -8,7 +8,7 @@ function [rotation] = rotateRotation(rotation,  step)
 %for can be ommited with  MatLab R2016
 %map = rot(map,2) works with multidimensional arrays
 
-    [M, I] = max(step);
+    [~, I] = max(step);
 
     switch I
         case 5
